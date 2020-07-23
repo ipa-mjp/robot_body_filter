@@ -450,7 +450,7 @@ struct LinkInfo
             ROS_ERROR("Robot model not found! Did you remap 'robot_description'?");
             return false;
           }
-          
+
           std::stringstream missing;
     
           // from the geometric model, find the shape of each link of interest

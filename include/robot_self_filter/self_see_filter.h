@@ -65,6 +65,7 @@ public:
       XmlRpc::XmlRpcValue ssl_vals;;
       
       nh_.getParam("self_see_links", ssl_vals);
+std::cout << "ssl_vals.size(): " << ssl_vals.size() << std::endl;
       if(ssl_vals.getType() != XmlRpc::XmlRpcValue::TypeArray) {
         ROS_WARN("Self see links need to be an array");
         
@@ -74,7 +75,7 @@ public:
         } else {
           for(int i = 0; i < ssl_vals.size(); i++) {
             robot_self_filter::LinkInfo li;
-            
+            std::cout << "ssl_vals[i].getType(): " << ssl_vals[i].getType() << std::endl;
             if(ssl_vals[i].getType() != XmlRpc::XmlRpcValue::TypeStruct) {
               ROS_WARN("Self see links entry %d is not a structure.  Stopping processing of self see links",i);
               break;

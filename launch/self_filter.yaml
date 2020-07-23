@@ -1,0 +1,4 @@
+self_see_links:
+  name: ["shoulder_link","upper_arm_link"]
+  padding: 0.01
+  scale: [1.1,1.1]
