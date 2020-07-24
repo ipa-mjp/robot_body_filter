@@ -516,7 +516,7 @@ struct LinkInfo
           bspheresRadius2_.resize(bodies_.size());
 
           for (unsigned int i = 0 ; i < bodies_.size() ; ++i)
-            ROS_DEBUG("Self mask includes link %s with volume %f", bodies_[i].name.c_str(), bodies_[i].volume);
+            ROS_INFO("Self mask includes link %s with volume %f", bodies_[i].name.c_str(), bodies_[i].volume);
     
           //ROS_INFO("Self filter using %f padding and %f scaling", padd, scale);
 
@@ -573,7 +573,7 @@ struct LinkInfo
           bodies::mergeBoundingSpheres(bspheres_, bound);	  
           tfScalar radiusSquared = bound.radius * bound.radius;
 
-          //std::cout << "Testing " << np << " points\n";
+          std::cout << "Testing " << np << " points\n";
 
           // we now decide which points we keep
           //#pragma omp parallel for schedule(dynamic) 

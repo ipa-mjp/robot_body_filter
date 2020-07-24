@@ -193,6 +193,7 @@ std::cout << "ssl_vals.size(): " << ssl_vals.size() << std::endl;
   void fillResult(const PointCloud& data_in, const std::vector<int> &keep, PointCloud& data_out)
   {
     const unsigned int np = data_in.points.size();
+std::cout << "data points: " << np << std::endl;
 
     // fill in output data with points that are NOT on the robot
     data_out.header = data_in.header;	  
@@ -203,6 +204,7 @@ std::cout << "ssl_vals.size(): " << ssl_vals.size() << std::endl;
     nan_point.x = std::numeric_limits<float>::quiet_NaN(); 
     nan_point.y = std::numeric_limits<float>::quiet_NaN();
     nan_point.z = std::numeric_limits<float>::quiet_NaN();
+
     for (unsigned int i = 0 ; i < np ; ++i)
     {
       if (keep[i] == robot_self_filter::OUTSIDE)

@@ -40,6 +40,11 @@
 #include <tf/message_filter.h>
 #include <message_filters/subscriber.h>
 
+#include <pcl/filters/crop_box.h>
+#include <pcl/filters/voxel_grid.h>
+#include <pcl/filters/extract_indices.h>
+#include <pcl/filters/passthrough.h>
+
 namespace robot_self_filter
 {
 class SelfFilter
@@ -135,7 +140,7 @@ private:
     
   void cloudCallback(const sensor_msgs::PointCloud2::ConstPtr &cloud2) 
   {
-    ROS_DEBUG("Got pointcloud that is %f seconds old", (ros::Time::now() - cloud2->header.stamp).toSec());
+    ROS_INFO("Got pointcloud that is %f seconds old", (ros::Time::now() - cloud2->header.stamp).toSec());
     std::vector<int> mask;
     ros::WallTime tm = ros::WallTime::now();
 
@@ -147,6 +152,13 @@ private:
     {
       typename pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
       pcl::fromROSMsg(*cloud2, *cloud);
+
+      // reduce points using voxel grid filter with 0.01 meters
+      pcl::VoxelGrid<pcl::PointXYZRGB> voxelgrid_filter;
+      voxelgrid_filter.setInputCloud(cloud);
+      voxelgrid_filter.setLeafSize(0.01f, 0.01f, 0.01f);
+      voxelgrid_filter.filter(*cloud);
+
       pcl::PointCloud<pcl::PointXYZRGB> out;
       self_filter_rgb_->updateWithSensorFrame(*cloud, out, sensor_frame_);
       pcl::toROSMsg(out, out2);
@@ -158,6 +170,26 @@ private:
     {
       typename pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
       pcl::fromROSMsg(*cloud2, *cloud);
+
+      // Build a passthrough filter to remove spurious NaNs
+      pcl::PointIndices::Ptr pass_inliers(new pcl::PointIndices);
+      pcl::PassThrough<pcl::PointXYZ> pass;
+      pass.setInputCloud(cloud);
+      pass.setFilterFieldName("x");
+      pass.setFilterLimits(-3.0, 3.0);
+      pass.setFilterFieldName("y");
+      pass.setFilterLimits(-3.0, 3.0);
+      pass.setFilterFieldName("z");
+      pass.setFilterLimits(-3.0, 3.0);
+      pass.filter(*cloud);
+
+      // reduce points using voxel grid filter with 0.01 meters
+      pcl::VoxelGrid<pcl::PointXYZ> voxelgrid_filter;
+      voxelgrid_filter.setInputCloud(cloud);
+      voxelgrid_filter.setLeafSize(0.08f, 0.08f, 0.08f);
+      voxelgrid_filter.filter(*cloud);
+
+
       pcl::PointCloud<pcl::PointXYZ> out;
       self_filter_->updateWithSensorFrame(*cloud, out, sensor_frame_);
       pcl::toROSMsg(out, out2);
@@ -168,7 +200,7 @@ private:
       
     double sec = (ros::WallTime::now() - tm).toSec();
     pointCloudPublisher_.publish(out2);
-    ROS_DEBUG("Self filter: reduced %d points to %d points in %f seconds", input_size, output_size, sec);
+    ROS_INFO("Self filter: reduced %d points to %d points in %f seconds", input_size, output_size, sec);
 
   }
   
